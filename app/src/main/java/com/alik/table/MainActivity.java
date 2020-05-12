@@ -401,45 +401,57 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             //String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
             //String range = "Class Data!A2:E";
 
+            //массив строк, который выводится на экран
             List<String> results = new ArrayList<String>();
+
+            //запрос к гугл-таблицы
             ValueRange response = this.mService.spreadsheets().values()
                     .get(spreadsheetId, range)
                     .execute();
+
+            //массив объектов (сроки с ячейками) из запроса
             List<List<Object>> values = response.getValues();
+
+            //если результат не нулевой...
             if (values != null) {
 
                 //"B4-B6" "C4-C6"
 
+                //..выводим заголовок
                 results.add("Модель, Количество");
 
+                // ..добавляем пустую стройчку
                 results.add("\n");
 
-                //выводим строчки 2,3,4 ячейки 1,2
+                //выводим ячейки 1,2 из строк 2,3,4
                 results.add(values.get(2).get(1) + ", " + values.get(2).get(2));
                 results.add(values.get(3).get(1) + ", " + values.get(3).get(2));
                 results.add(values.get(4).get(1) + ", " + values.get(4).get(2));
 
+                // ..добавляем пустую стройчку
                 results.add("\n");
 
+                //заголовок
                 results.add("Модель, Цвет, Дата заказа в цвете");
                 results.add("\n");
 
+                // цикл по всему массиву таблицы
                 for (List row : values) {
 
 
-
-                    //if (row.get(7).toString().equals("Заказ в цвете"))
+                    //если размер строки больше 14 и 7я ячейка = "Заказ в цвете"
                     if ((row.size() > 14) && row.get(7).toString().equals("Заказ в цвете"))
                     {
 
                         // Если в столбце "H" в ячейке значение "Заказ в цвете",
                         //Вывести значения в этой строке из ячеек столбцов "B" Модель, "I" Цвет покраски, "O" Дата покраски в цвете.
                         results.add(row.get(1) + ", " + row.get(12) + ", " + row.get(14));
-                        //results.add(row.get(1) + ", " + row.get(2) + ", " + row.get(3));
                         
                     }
                 }
             }
+
+
             return results;
         }
 

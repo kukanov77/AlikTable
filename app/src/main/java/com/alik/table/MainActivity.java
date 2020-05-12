@@ -414,6 +414,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                 results.add("\n");
 
+                //выводим строчки 2,3,4 ячейки 1,2
                 results.add(values.get(2).get(1) + ", " + values.get(2).get(2));
                 results.add(values.get(3).get(1) + ", " + values.get(3).get(2));
                 results.add(values.get(4).get(1) + ", " + values.get(4).get(2));

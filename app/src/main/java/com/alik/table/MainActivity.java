@@ -414,6 +414,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                 results.add("\n");
 
+                //выводим строчки 2,3,4 ячейки 1,2
                 results.add(values.get(2).get(1) + ", " + values.get(2).get(2));
                 results.add(values.get(3).get(1) + ", " + values.get(3).get(2));
                 results.add(values.get(4).get(1) + ", " + values.get(4).get(2));
@@ -435,6 +436,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         //Вывести значения в этой строке из ячеек столбцов "B" Модель, "I" Цвет покраски, "O" Дата покраски в цвете.
                         results.add(row.get(1) + ", " + row.get(12) + ", " + row.get(14));
                         //results.add(row.get(1) + ", " + row.get(2) + ", " + row.get(3));
+                        
                     }
                 }
             }

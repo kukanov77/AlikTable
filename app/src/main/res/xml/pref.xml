@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="Настройки">
+
+
+        <com.alik.table.EditTextPreference
+            android:defaultValue="1i8zUcowOG4COOPP_tPYwbP_HOJq5KgdDw-aLs3CfcB0"
+            android:key="id_table"
+            android:summary="ID Table"
+            android:title="Идентификатор таблицы:"
+            />
+
+        <com.alik.table.EditTextPreference
+            android:key="range"
+            android:summary="range"
+            android:title="Область значений:"
+            android:defaultValue="Заказы!A2:T100"
+        />
+
+
+    </PreferenceCategory>
+
+
+</PreferenceScreen>

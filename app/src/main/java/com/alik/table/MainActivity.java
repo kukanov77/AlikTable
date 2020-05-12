@@ -435,6 +435,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         //Вывести значения в этой строке из ячеек столбцов "B" Модель, "I" Цвет покраски, "O" Дата покраски в цвете.
                         results.add(row.get(1) + ", " + row.get(12) + ", " + row.get(14));
                         //results.add(row.get(1) + ", " + row.get(2) + ", " + row.get(3));
+                        
                     }
                 }
             }

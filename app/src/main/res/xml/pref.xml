@@ -6,7 +6,7 @@
 
 
         <com.alik.table.EditTextPreference
-            android:defaultValue="1i8zUcowOG4COOPP_tPYwbP_HOJq5KgdDw-aLs3CfcB0"
+            android:defaultValue="14SpalNST8Ik2r-ztkSmmwaD2miPt9yUUGbCH_mE86M8"
             android:key="id_table"
             android:summary="ID Table"
             android:title="Идентификатор таблицы:"
@@ -16,7 +16,7 @@
             android:key="range"
             android:summary="range"
             android:title="Область значений:"
-            android:defaultValue="Заказы!A2:T100"
+            android:defaultValue="Order!A2:T100"
         />
 
 

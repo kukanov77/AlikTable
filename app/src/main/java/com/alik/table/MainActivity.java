@@ -1,7 +1,9 @@
 package com.alik.table;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.Manifest;
 import android.accounts.AccountManager;
@@ -24,8 +26,12 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.alik.table.model.Detail;
+import com.alik.table.model.Model;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
@@ -71,14 +77,44 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     String spreadsheetId = "";
     String range = "";
 
+    TabLayout tabLayout;
+    ViewPager2 viewPager;
+    ViewPagerAdapter pagerAdapter;
+
+    private String[] titles = new String[]{"Модели", "Даты"};
+
+    ArrayList<Model> listModel;
+    ArrayList<Detail> listDetail;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+        // -----
+
+        ActionBar ab =  getSupportActionBar();
+            ab.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+            ab.setDisplayShowHomeEnabled(true);
+            //ab.setIcon(R.drawable.ic_launcher_round);
+            ab.setCustomView(R.layout.custom_action_bar);
+
+            View view = ab.getCustomView();
+
+        // -----
+
+
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         spreadsheetId = sharedPreferences.getString("id_table", Const.SPREADS_SHEET_ID);
         range = sharedPreferences.getString("range", Const.RANGE);
+
+        viewPager = findViewById(R.id.view_pager);
+        tabLayout = findViewById(R.id.tabs);
+
+
 
 
         textView = findViewById(R.id.textView);
@@ -87,12 +123,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mProgress = new ProgressDialog(this);
         mProgress.setMessage("Calling Google Sheets API ...");
 
-        btnLoad = findViewById(R.id.btnLoad);
+        btnLoad = view.findViewById(R.id.btnLoad);
         btnLoad.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btnLoad.setEnabled(false);
                 textView.setText("");
+                textView.setVisibility( View.GONE );
+                //todo
+                //getTestResult();
                 getResultsFromApi();
                 btnLoad.setEnabled(true);
             }
@@ -101,7 +140,44 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
+//todo
+        //getTestResult();
+        getResultsFromApi();
 
+    }
+
+    // --------------------------------------------------------------------------------------
+
+    private void getTestResult() {
+        listModel = new ArrayList<Model>();
+        listDetail = new ArrayList<Detail>();
+
+        listModel.add(new Model("qwer", "5"));
+        listModel.add(new Model("asdf", "3"));
+        listModel.add(new Model("zxcv", "7"));
+
+        listDetail.add(new Detail("qwer", "qwer", "12.34.55", "12.34.55"));
+        listDetail.add(new Detail("asdf", "asdf", "12345", "12345"));
+        listDetail.add(new Detail("zxcv", "zxcv", "12345", "12345"));
+        listDetail.add(new Detail("rtyu", "rtyu", "12345", "12345"));
+        listDetail.add(new Detail("fghj", "fghj", "12345", "12345"));
+
+        setViewPager();
+    }
+
+       // pagerAdapter.model_fragment = new ListFragment(new ModelAdapter( listModel) );
+       // pagerAdapter.detail_fragment = new ListFragment(new DetailAdapter( listDetail) );
+        void setViewPager(){
+
+        pagerAdapter  = new ViewPagerAdapter(this, new ListFragment(new ModelAdapter( listModel) ), new ListFragment(new DetailAdapter( listDetail) ));
+        viewPager.setAdapter(pagerAdapter);
+
+        new TabLayoutMediator(tabLayout, viewPager,
+                new TabLayoutMediator.TabConfigurationStrategy() {
+                    @Override public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
+                        tab.setText(titles[position]);
+                    }
+                }).attach();
     }
 
 
@@ -147,6 +223,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccount();
         } else if (! isDeviceOnline()) {
+            textView.setVisibility( View.VISIBLE );
             textView.setText("No network connection available.");
         } else {
             new MakeRequestTask(mCredential).execute();
@@ -205,6 +282,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         switch(requestCode) {
             case REQUEST_GOOGLE_PLAY_SERVICES:
                 if (resultCode != RESULT_OK) {
+                    textView.setVisibility( View.VISIBLE );
                     textView.setText(
                             "This app requires Google Play Services. Please install " +
                                     "Google Play Services on your device and relaunch this app.");
@@ -241,6 +319,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 range = sharedPreferences.getString("range", Const.RANGE);
 
                 btnLoad.setEnabled(false);
+                textView.setVisibility( View.GONE );
                 textView.setText("");
                 getResultsFromApi();
                 btnLoad.setEnabled(true);
@@ -350,7 +429,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
      * An asynchronous task that handles the Google Sheets API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
      */
-    private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
+    private class MakeRequestTask extends AsyncTask<Void, Void, Boolean> {
         private com.google.api.services.sheets.v4.Sheets mService = null;
         private Exception mLastError = null;
 
@@ -368,13 +447,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
          * @param params no parameters needed for this task.
          */
         @Override
-        protected List<String> doInBackground(Void... params) {
+        protected Boolean doInBackground(Void... params) {
             try {
                 return getDataFromApi();
             } catch (Exception e) {
                 mLastError = e;
                 cancel(true);
-                return null;
+                return false;
             }
         }
 
@@ -384,7 +463,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
          * @return List of names and majors
          * @throws IOException
          */
-        private List<String> getDataFromApi() throws IOException {
+        private Boolean getDataFromApi() throws IOException {
 
             //файл алика
 
@@ -402,7 +481,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             //String range = "Class Data!A2:E";
 
             //массив строк, который выводится на экран
-            List<String> results = new ArrayList<String>();
+            //List<String> results = new ArrayList<String>();
+
+            listModel = new ArrayList<Model>( );
+            listDetail = new ArrayList<Detail>( );
 
             //запрос к гугл-таблицы
             ValueRange response = this.mService.spreadsheets().values()
@@ -418,22 +500,27 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 //"B4-B6" "C4-C6"
 
                 //..выводим заголовок
-                results.add("Модель, Количество");
+               // results.add("Модель, Количество");
 
                 // ..добавляем пустую стройчку
-                results.add("\n");
+               // results.add("\n");
 
                 //выводим ячейки 1,2 из строк 2,3,4
-                results.add(values.get(2).get(1) + ", " + values.get(2).get(2));
-                results.add(values.get(3).get(1) + ", " + values.get(3).get(2));
-                results.add(values.get(4).get(1) + ", " + values.get(4).get(2));
+
+                listModel.add( new Model(values.get(2).get(1).toString(), values.get(2).get(2).toString()));
+                listModel.add( new Model(values.get(3).get(1).toString(), values.get(3).get(2).toString()));
+                listModel.add( new Model(values.get(4).get(1).toString(), values.get(4).get(2).toString()));
+
+//                results.add(values.get(2).get(1) + ", " + values.get(2).get(2));
+//                results.add(values.get(3).get(1) + ", " + values.get(3).get(2));
+//                results.add(values.get(4).get(1) + ", " + values.get(4).get(2));
 
                 // ..добавляем пустую стройчку
-                results.add("\n");
+//                results.add("\n");
 
                 //заголовок
-                results.add("Модель, Цвет, Дата заказа в цвете");
-                results.add("\n");
+//                results.add("Модель, Цвет, Дата заказа в цвете, Дата готовности в цвете");
+//                results.add("\n");
 
                 // цикл по всему массиву таблицы
                 for (List row : values) {
@@ -444,35 +531,56 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     {
 
                         // Если в столбце "H" в ячейке значение "Заказ в цвете",
-                        //Вывести значения в этой строке из ячеек столбцов "B" Модель, "I" Цвет покраски, "O" Дата покраски в цвете.
-                        results.add(row.get(1) + ", " + row.get(12) + ", " + row.get(14));
+                        //Вывести значения в этой строке из ячеек столбцов "B" Модель, "I" Цвет покраски, "O" Дата заказа в цвете, "P" Дата готовности в цвете.
+
+                        listDetail.add( new Detail( row.get(1).toString() , row.get(12).toString() , row.get(14).toString() , row.get(15).toString() ) );
+
+                        //results.add(row.get(1) + ", " + row.get(12) + ", " + row.get(14) + ", " + row.get(15));
                         
                     }
                 }
+
+                return true;
+
+            }
+            else
+            {
+                return false;
             }
 
 
-            return results;
+            //return results;
         }
 
 
 
         @Override
         protected void onPreExecute() {
+            textView.setVisibility( View.GONE );
             textView.setText("");
             mProgress.show();
         }
 
         @Override
-        protected void onPostExecute(List<String> output) {
+        protected void onPostExecute(Boolean output) {
             mProgress.hide();
-            if (output == null || output.size() == 0) {
-                textView.setText("ничего не получил");
-            } else {
-                //output.add(0, "Data retrieved using the Google Sheets API:");
-                textView.setText(TextUtils.join("\n", output));
+
+            //if (output == null || output.size() == 0) {
+            if (output) {
+
+                setViewPager();
 
             }
+            else
+            {
+                textView.setVisibility( View.VISIBLE );
+                textView.setText("ничего не получил");
+            } //else {
+                //output.add(0, "Data retrieved using the Google Sheets API:");
+//                textView.setText(TextUtils.join("\n", output));
+
+
+            //}
         }
 
         @Override

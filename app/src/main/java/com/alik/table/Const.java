@@ -2,7 +2,7 @@ package com.alik.table;
 
 public class Const {
 
-    static final String SPREADS_SHEET_ID  = "1i8zUcowOG4COOPP_tPYwbP_HOJq5KgdDw-aLs3CfcB0";
-    static final String RANGE = "Заказы!A2:T100";
+    static final String SPREADS_SHEET_ID  = "14SpalNST8Ik2r-ztkSmmwaD2miPt9yUUGbCH_mE86M8";
+    static final String RANGE = "Order!A2:T100";
 
 }
